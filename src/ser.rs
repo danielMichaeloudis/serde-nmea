@@ -1,6 +1,8 @@
 use std::io;
 
-use serde::ser;
+use serde::ser::{self};
+
+use crate::error::Error;
 
 pub struct Serializer<W> {
     writer: W,
@@ -23,18 +25,36 @@ where
     }
 }
 
+macro_rules! write_int {
+    ($value:expr, $writer:expr) => {{
+        let mut buf = ::itoa::Buffer::new();
+        let s = buf.format($value);
+        $writer.write_all(s.as_bytes()).map_err(From::from)
+    }};
+}
+
+macro_rules! write_float {
+    ($value:expr, $writer:expr) => {{
+        if $value.is_finite() {
+            let mut buf = ::zmij::Buffer::new();
+            let s = buf.format($value);
+            $writer.write_all(s.as_bytes()).map_err(From::from)
+        } else {
+            Ok(())
+        }
+    }};
+}
+
 impl<W> ser::Serializer for Serializer<W>
 where
     W: io::Write,
 {
-    fn serialize_i128(self, v: i128) -> Result<Self::Ok, Self::Error> {
-        let _ = v;
-        Err(ser::Error::custom("i128 is not supported"))
+    fn serialize_i128(mut self, v: i128) -> Result<Self::Ok, Self::Error> {
+        write_int!(v, self.writer)
     }
 
-    fn serialize_u128(self, v: u128) -> Result<Self::Ok, Self::Error> {
-        let _ = v;
-        Err(ser::Error::custom("u128 is not supported"))
+    fn serialize_u128(mut self, v: u128) -> Result<Self::Ok, Self::Error> {
+        write_int!(v, self.writer)
     }
 
     fn collect_seq<I>(self, iter: I) -> Result<Self::Ok, Self::Error>
@@ -71,9 +91,9 @@ where
         true
     }
 
-    type Ok;
+    type Ok = ();
 
-    type Error;
+    type Error = Error;
 
     type SerializeSeq;
 
@@ -89,55 +109,60 @@ where
 
     type SerializeStructVariant;
 
-    fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
+    fn serialize_bool(mut self, v: bool) -> Result<Self::Ok, Self::Error> {
+        if v {
+            self.writer.write_all(b"1")
+        } else {
+            self.writer.write_all(b"0")
+        }
+        .map_err(From::from)
+    }
+
+    fn serialize_i8(mut self, v: i8) -> Result<Self::Ok, Self::Error> {
+        write_int!(v, self.writer)
+    }
+
+    fn serialize_i16(mut self, v: i16) -> Result<Self::Ok, Self::Error> {
+        write_int!(v, self.writer)
+    }
+
+    fn serialize_i32(mut self, v: i32) -> Result<Self::Ok, Self::Error> {
+        write_int!(v, self.writer)
+    }
+
+    fn serialize_i64(mut self, v: i64) -> Result<Self::Ok, Self::Error> {
+        write_int!(v, self.writer)
+    }
+
+    fn serialize_u8(mut self, v: u8) -> Result<Self::Ok, Self::Error> {
+        write_int!(v, self.writer)
+    }
+
+    fn serialize_u16(mut self, v: u16) -> Result<Self::Ok, Self::Error> {
+        write_int!(v, self.writer)
+    }
+
+    fn serialize_u32(mut self, v: u32) -> Result<Self::Ok, Self::Error> {
+        write_int!(v, self.writer)
+    }
+
+    fn serialize_u64(mut self, v: u64) -> Result<Self::Ok, Self::Error> {
+        write_int!(v, self.writer)
+    }
+
+    fn serialize_f32(mut self, v: f32) -> Result<Self::Ok, Self::Error> {
+        write_float!(v, self.writer)
+    }
+
+    fn serialize_f64(mut self, v: f64) -> Result<Self::Ok, Self::Error> {
+        write_float!(v, self.writer)
+    }
+
+    fn serialize_char(mut self, v: char) -> Result<Self::Ok, Self::Error> {
         todo!()
     }
 
-    fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
-        todo!()
-    }
-
-    fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
-        todo!()
-    }
-
-    fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
-        todo!()
-    }
-
-    fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
-        todo!()
-    }
-
-    fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
-        todo!()
-    }
-
-    fn serialize_u16(self, v: u16) -> Result<Self::Ok, Self::Error> {
-        todo!()
-    }
-
-    fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
-        todo!()
-    }
-
-    fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        todo!()
-    }
-
-    fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-        todo!()
-    }
-
-    fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-        todo!()
-    }
-
-    fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-        todo!()
-    }
-
-    fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
+    fn serialize_str(mut self, v: &str) -> Result<Self::Ok, Self::Error> {
         todo!()
     }
 
