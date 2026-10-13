@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+heapless = "0.9.3"
 itoa = "1.0.18"
 serde = "1.0.229"
 zmij = "1.0.23"

@@ -19,6 +19,8 @@ impl Display for ErrorCode {
 pub enum Error {
     Parse(ErrorCode, usize),
     Io(std::io::Error),
+    NotImplemented,
+    BufferFull,
 }
 
 impl Display for Error {
@@ -26,6 +28,7 @@ impl Display for Error {
         match self {
             Error::Parse(error_code, pos) => write!(f, "{} at byte {}", error_code, pos),
             Error::Io(error) => error.fmt(f),
+            Error::NotImplemented => write!(f, "Not Implemented"),
         }
     }
 }
